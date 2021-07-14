@@ -10,6 +10,7 @@ namespace RealEstate.Models
     public class Listing
     {
         public int Id { get; set; }
+        [Required]
         public string Address { get; set; }
 
         [DataType(DataType.Date)]

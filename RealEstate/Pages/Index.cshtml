@@ -4,7 +4,115 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<h1>Real Estate Listings</h1>
+<ul id="ltgs">
+</ul>
+
+<div>
+    <hr />
+    <form id="createListForm" class="form">
+        <h4>Add new listing</h4>
+        <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" class="form-control" id="address" placeholder="Address" />
+        </div>
+        <div class="form-group">
+            <label for="expectedPrice">Expected Price</label>
+            <input type="number" class="form-control" id="expectedPrice" placeholder="Expected Price" />
+        </div>
+        <div class="form-group">
+            <label for="dateOfListing">Date of Listing</label>
+            <input type="date" class="form-control" id="dateOfListing" placeholder="Date of Listing" />
+        </div>
+        <div class="form-group">
+            <label for="available">Available</label>
+            <input type="checkbox" class="form-control" id="available" placeholder="Available" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 </div>
+
+
+@section Scripts {
+    <script>
+
+        $(function () {
+
+            $.ajax({
+                url: "/api/listings",
+                dataType: "json",
+                contentType: 'application/json',
+                method: 'GET'
+            }).done(function (responseJSON, status, xhr) {
+                $.each(responseJSON, function (idx, listing) {
+                    $("#ltgs").append("<li>" + listing.address + ' - <strong>' + listing.available + '</strong>' + ' - <strong>' + listing.expectedPrice + '</strong> <button class="btn btn-danger btn-sm listing-delete" listing-id="' + listing.id + '">Delete</button> <button class="btn btn-primary btn-sm listing-available" id-listing="' + listing.id + '">Change Availability</button></li>');
+                });
+
+
+                $("#ltgs").on("click", ".listing-delete", function () {
+
+                    var id = $(this).attr("listing-id");
+                    var btn = this;
+                    $.ajax({
+                        url: "/api/listings/" + id,
+                        dataType: "json",
+                        contentType: "application/json",
+                        method: 'DELETE',
+                    }).done(function () {
+                        $(btn).parents("li:first").remove();
+                    }).fail(function () {
+                        alert("There was an error deleting your listing");
+                    });
+
+                });
+                $("#ltgs").on("click", ".listing-available", function () {
+
+                    var id = $(this).attr("id-listing");
+                    var btn = this;
+                    $.ajax({
+                        url: "/api/listings/" + id,
+                        dataType: "json",
+                        contentType: "application/json",
+                        method: 'PUT',
+                    }).done(function () {
+                        $(btn).parents("li:first").remove();
+                    }).fail(function () {
+                        alert("There was an error updating your listing");
+                    });
+
+                });
+
+                $("#createListForm").submit(function () {
+                    var requestData = {
+                        address: $("#address").val(),
+                        //expectedPrice: $("#expectedPrice").val(),
+                        //dateOfListing: $("#dateOfListing").val(),
+                        //available: $("#available").val()
+                    };
+                    $.ajax({
+                        url: '/api/listings',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'POST',
+                        data: JSON.stringify(requestData)
+                    }).done(function () {
+                        $("#address").val("");
+                        //$("#expectedPrice").val("");
+                        //$("#dateOfListing").val("");
+                        //$("#available").val("");
+
+                    }).fail(function () {
+                        alert("There was an error saving your listing");
+                    });
+                });
+
+
+            }).fail(function (xhr, status, error) {
+                alert("There was an error retrieving the data");
+            });
+
+
+        });
+    </script>
+}
